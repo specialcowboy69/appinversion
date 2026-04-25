@@ -21,4 +21,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire agent folder
 COPY investment-ai-agent/ .
 
-CMD ["python", "app/main.py"] 
+CMD ["python", "-m", "app.main"] 
