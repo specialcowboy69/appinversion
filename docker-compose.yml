@@ -1,0 +1,23 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: always
+
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    volumes:
+      - ./investment-ai-agent/data:/app/data
+      - ./investment-ai-agent/logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    restart: always
