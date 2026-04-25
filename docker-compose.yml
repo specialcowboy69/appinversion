@@ -25,5 +25,5 @@ services:
       resources:
         limits:
           cpus: '0.8'
-          memory: 2G
+          memory: 1G
     restart: always
