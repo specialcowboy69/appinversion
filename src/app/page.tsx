@@ -1,88 +1,103 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/firebase/auth-context';
 import { Button } from '@/components/ui/button';
-import { Wand2, Zap, Shield, Sparkles } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { 
+  TrendingUp, 
+  ArrowRight, 
+  Sparkles, 
+  ShieldCheck,
+  Zap
+} from 'lucide-react';
 
 export default function LandingPage() {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b">
-        <Link className="flex items-center justify-center gap-2" href="#">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
-            <Wand2 size={20} />
-          </div>
-          <span className="font-bold text-xl tracking-tight">AI SaaS</span>
-        </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="/login">
-            Login
-          </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="/signup">
-            Sign up
-          </Link>
-        </nav>
-      </header>
-      <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-background">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                  Potencia tu negocio con IA Generativa
-                </h1>
-                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                  Crea ideas de negocio, avatares de clientes, descripciones de productos y contenido SEO en segundos.
-                </p>
-              </div>
-              <div className="space-x-4">
-                <Button asChild size="lg" className="px-8">
-                  <Link href="/signup">Empezar ahora</Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="px-8">
-                  <Link href="/login">Saber más</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
+  const { user } = useAuth();
+  const [demoInput, setDemoInput] = useState('');
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-muted/50">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="flex flex-col items-center space-y-2 border p-6 rounded-xl bg-background shadow-sm">
-                <Zap className="h-10 w-10 text-primary mb-2" />
-                <h3 className="text-xl font-bold">Generación Rápida</h3>
-                <p className="text-muted-foreground text-center">
-                  Resultados profesionales en menos de 10 segundos para cualquier herramienta.
-                </p>
-              </div>
-              <div className="flex flex-col items-center space-y-2 border p-6 rounded-xl bg-background shadow-sm">
-                <Shield className="h-10 w-10 text-primary mb-2" />
-                <h3 className="text-xl font-bold">Proyectos Organizados</h3>
-                <p className="text-muted-foreground text-center">
-                  Mantén todo el contexto de tu negocio en proyectos separados y seguros.
-                </p>
-              </div>
-              <div className="flex flex-col items-center space-y-2 border p-6 rounded-xl bg-background shadow-sm">
-                <Sparkles className="h-10 w-10 text-primary mb-2" />
-                <h3 className="text-xl font-bold">Editor Inteligente</h3>
-                <p className="text-muted-foreground text-center">
-                  Refina tus textos directamente con acciones IA integradas en el editor.
-                </p>
-              </div>
-            </div>
+  return (
+    <div className="min-h-screen bg-[#020617] text-slate-50 selection:bg-primary/30 flex flex-col items-center justify-center p-6 overflow-hidden relative">
+      
+      {/* Background Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Header / Nav */}
+      <nav className="absolute top-0 w-full p-6 flex justify-between items-center max-w-7xl mx-auto z-10">
+        <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <TrendingUp size={20} className="text-white" />
           </div>
-        </section>
+          <span>Inversión<span className="text-primary">IA</span></span>
+        </div>
+        <div>
+          {user ? (
+            <Link href="/dashboard">
+              <Button variant="ghost" className="hover:bg-slate-800">Dashboard</Button>
+            </Link>
+          ) : (
+            <Link href="/login">
+              <Button variant="ghost" className="hover:bg-slate-800">Iniciar Sesión</Button>
+            </Link>
+          )}
+        </div>
+      </nav>
+
+      {/* Main Content: The Dialogue Box */}
+      <main className="w-full max-w-3xl z-10 space-y-12 text-center mt-12">
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
+            Tu Analista de Inversiones <br /> con Inteligencia Artificial
+          </h1>
+          <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto">
+            Análisis de acciones en tiempo real, noticias del mercado y sabiduría financiera en un solo lugar.
+          </p>
+        </div>
+
+        {/* The Dialogue Box UI */}
+        <div className="relative group animate-in fade-in zoom-in duration-1000 delay-200">
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+          <div className="relative bg-slate-900/80 border border-slate-800 p-2 rounded-2xl backdrop-blur-xl shadow-2xl flex items-center gap-2">
+            <div className="pl-4 text-slate-500">
+              <Sparkles size={20} />
+            </div>
+            <Input 
+              className="bg-transparent border-none text-lg h-14 focus-visible:ring-0 placeholder:text-slate-600"
+              placeholder="¿Qué opinas de invertir en NVIDIA hoy?"
+              value={demoInput}
+              onChange={(e) => setDemoInput(e.target.value)}
+            />
+            <Link href={user ? "/chat" : "/login"}>
+              <Button size="lg" className="h-12 px-8 rounded-xl shadow-lg shadow-primary/20 group">
+                Empezar
+                <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Minimal Badges */}
+        <div className="flex flex-wrap justify-center gap-6 pt-8 text-slate-500 text-sm font-medium animate-in fade-in duration-1000 delay-500">
+          <div className="flex items-center gap-2">
+            <Zap size={16} className="text-yellow-500" />
+            <span>Datos en Tiempo Real</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={16} className="text-green-500" />
+            <span>Basado en Estrategias Probadas</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <TrendingUp size={16} className="text-primary" />
+            <span>Análisis de Sentimiento</span>
+          </div>
+        </div>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">© 2026 AI SaaS MVP. Todos los derechos reservados.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-xs hover:underline underline-offset-4" href="#">
-            Términos de Servicio
-          </Link>
-          <Link className="text-xs hover:underline underline-offset-4" href="#">
-            Privacidad
-          </Link>
-        </nav>
+
+      {/* Footer Branding */}
+      <footer className="absolute bottom-8 text-slate-600 text-xs tracking-widest uppercase">
+        Powered by Google Gemini 1.5 & RAG Technology
       </footer>
     </div>
   );
