@@ -11,14 +11,14 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy requirements from the specific folder
+# Set PYTHONPATH so Python can find the 'app' module
+ENV PYTHONPATH=/app
+
+# Copy requirements and install
 COPY investment-ai-agent/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the agent code
+# Copy the entire agent folder
 COPY investment-ai-agent/ .
-
-# Expose the port if your agent has an API (e.g., FastAPI)
-# EXPOSE 8000
 
 CMD ["python", "app/main.py"] 
