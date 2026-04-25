@@ -19,5 +19,6 @@ services:
     deploy:
       resources:
         limits:
+          cpus: '0.8'
           memory: 2G
     restart: always
