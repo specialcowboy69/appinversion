@@ -1,69 +1,112 @@
 import os
 import logging
-from typing import List
+import yfinance as yf
+from typing import List, Optional
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_classic.chains import ConversationalRetrievalChain
-from langchain_classic.memory import ConversationBufferMemory
+from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain.tools import tool
+from langchain_community.tools.ddg_search.tool import DuckDuckGoSearchRun
 from app.rag.vector_store import VectorStoreManager
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
+# Load env and configure logging
 load_dotenv()
-
-# Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-class InvestmentAgent:
-    """
-    Main agent that orchestrates RAG, analysis, and reporting using Google Gemini.
-    """
-    
-    def __init__(self):
-        self.vector_store_manager = VectorStoreManager()
-        # Initialize Google Gemini Pro
-        self.llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
-            temperature=0,
-            max_tokens=None,
-            timeout=None,
-            max_retries=2,
-        )
-        self.memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True
-        )
-        self.qa_chain = ConversationalRetrievalChain.from_llm(
-            llm=self.llm,
-            retriever=self.vector_store_manager.vector_db.as_retriever(search_kwargs={"k": 5}),
-            memory=self.memory
-        )
-        logger.info("Investment Agent initialized with Google Gemini.")
+# Initialize FastAPI
+app = FastAPI(title="Investment AI Agent API")
 
-    def chat(self, query: str) -> str:
-        """
-        Processes a user query and returns a response based on internal documents.
-        """
-        logger.info(f"Processing query: {query}")
-        try:
-            response = self.qa_chain.invoke({"question": query})
-            return response["answer"]
-        except Exception as e:
-            logger.error(f"Error in chat: {e}")
-            return f"Lo siento, ocurrió un error al procesar tu solicitud: {e}"
+# Initialize Vector Store
+vector_store = VectorStoreManager()
 
-    def generate_report(self, ticker: str):
-        """
-        Generates a full investment report for a ticker.
-        """
-        prompt = f"Genera un informe de inversión detallado para {ticker} basado en los documentos disponibles."
-        return self.chat(prompt)
+# --- Tools Definition ---
+
+@tool
+def get_stock_data(ticker: str):
+    """
+    Retrieves real-time financial data for a stock ticker (e.g. AAPL, TSLA).
+    Returns price, dividend yield, and a brief summary.
+    """
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
+        return {
+            "price": info.get("currentPrice") or info.get("regularMarketPrice"),
+            "currency": info.get("currency"),
+            "dividendYield": info.get("dividendYield"),
+            "sector": info.get("sector"),
+            "longBusinessSummary": info.get("longBusinessSummary")[:500] + "..." if info.get("longBusinessSummary") else "No summary available"
+        }
+    except Exception as e:
+        return f"Error fetching data for {ticker}: {e}"
+
+@tool
+def search_investment_strategy(query: str):
+    """
+    Searches internal documents and investment books (like Graham or Buffett) 
+    to get investment criteria and wisdom.
+    """
+    results = vector_store.search(query, k=3)
+    return "\n\n".join([doc.page_content for doc in results])
+
+@tool
+def search_market_news(query: str):
+    """
+    Searches the web for latest market news and sentiment about a company or sector.
+    """
+    try:
+        search = DuckDuckGoSearchRun()
+        return search.run(query)
+    except Exception as e:
+        return f"Error searching news: {e}"
+
+# --- Agent Initialization ---
+
+llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
+tools = [get_stock_data, search_investment_strategy, search_market_news]
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", """Eres un Analista de Inversiones Senior. Tu misión es dar veredictos de inversión razonados.
+    Para cada consulta, DEBES seguir este proceso:
+    1. Buscar datos reales de la empresa usando 'get_stock_data'.
+    2. Buscar noticias y sentimiento actual usando 'search_market_news'.
+    3. Consultar tu base de sabiduría interna usando 'search_investment_strategy' para aplicar criterios de inversión probados.
+    4. Sintetizar todo en un veredicto final claro y en ESPAÑOL, citando tus fuentes y explicando por qué llegas a esa conclusión."""),
+    ("human", "{input}"),
+    MessagesPlaceholder("agent_scratchpad"),
+])
+
+agent = create_tool_calling_agent(llm, tools, prompt)
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+
+# --- API Models ---
+
+class ChatRequest(BaseModel):
+    input: str
+
+class ChatResponse(BaseModel):
+    response: str
+
+# --- Endpoints ---
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat_endpoint(request: ChatRequest):
+    try:
+        logger.info(f"Received query: {request.input}")
+        result = agent_executor.invoke({"input": request.input})
+        return ChatResponse(response=result["output"])
+    except Exception as e:
+        logger.error(f"Error in chat endpoint: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 if __name__ == "__main__":
-    agent = InvestmentAgent()
-    print("Agente de Inversión listo (Gemini). Escribe 'salir' para terminar.")
-    while True:
-        user_input = input("Tú: ")
-        if user_input.lower() in ["salir", "exit", "quit"]:
-            break
-        respuesta = agent.chat(user_input)
-        print(f"Agente: {respuesta}")
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

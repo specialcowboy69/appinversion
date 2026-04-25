@@ -12,3 +12,8 @@ requests
 beautifulsoup4
 watchdog
 typing-extensions
+yfinance
+duckduckgo-search
+fastapi
+uvicorn
+python-multipart

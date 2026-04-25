@@ -21,4 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire agent folder
 COPY investment-ai-agent/ .
 
-CMD ["python", "-m", "app.main"] 
+# Expose the port for the FastAPI server
+EXPOSE 8000
+
+CMD ["python", "-m", "app.main"]
