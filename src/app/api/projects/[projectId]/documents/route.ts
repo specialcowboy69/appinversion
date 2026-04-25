@@ -4,10 +4,10 @@ import { Document } from '@/lib/types';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
-    const { projectId } = params;
+    const { projectId } = await params;
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });

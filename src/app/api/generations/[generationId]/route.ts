@@ -3,10 +3,10 @@ import { adminAuth, adminDb } from '@/lib/firebase/admin';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { generationId: string } }
+  { params }: { params: Promise<{ generationId: string }> }
 ) {
   try {
-    const { generationId } = params;
+    const { generationId } = await params;
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
