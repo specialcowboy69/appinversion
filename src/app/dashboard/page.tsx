@@ -105,6 +105,14 @@ export default function DashboardPage() {
                   <ArrowRight className="h-4 w-4 opacity-50" />
                 </Button>
               </Link>
+              <Link href="/chat">
+                <Button className="w-full justify-between" variant="default">
+                  <div className="flex items-center">
+                    <TrendingUp className="mr-2 h-4 w-4" /> Chat con Analista IA
+                  </div>
+                  <ArrowRight className="h-4 w-4 opacity-50" />
+                </Button>
+              </Link>
               <Link href="/tools">
                 <Button className="w-full justify-between" variant="secondary">
                   <div className="flex items-center">
