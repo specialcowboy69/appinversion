@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
       .orderBy('createdAt', 'desc')
       .get();
 
-    const favorites = snapshot.docs.map(doc => ({ 
+    const favorites = snapshot.docs.map((doc: any) => ({ 
       id: doc.id, 
       ...doc.data(),
       createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt 

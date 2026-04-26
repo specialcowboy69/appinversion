@@ -69,7 +69,7 @@ export async function GET(
       .orderBy('updatedAt', 'desc')
       .get();
 
-    const documents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const documents = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
     return NextResponse.json(documents);
   } catch (error: any) {

@@ -23,7 +23,7 @@ export async function GET(
       .orderBy('createdAt', 'desc')
       .get();
 
-    const generations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const generations = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
     return NextResponse.json(generations);
   } catch (error: any) {
