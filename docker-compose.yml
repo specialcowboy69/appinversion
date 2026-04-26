@@ -14,7 +14,7 @@ services:
           memory: 1.5G
     restart: always
 
-  agent:
+  rag:
     build:
       context: .
       dockerfile: Dockerfile.agent
