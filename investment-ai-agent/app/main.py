@@ -6,7 +6,15 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.agents import create_tool_calling_agent, AgentExecutor
+from langchain.agents import AgentExecutor
+try:
+    from langchain.agents import create_tool_calling_agent
+except ImportError:
+    try:
+        from langchain.agents.tool_calling_agent import create_tool_calling_agent
+    except ImportError:
+        # Last resort: generic structured chat agent if tool calling is somehow missing
+        from langchain.agents import create_structured_chat_agent as create_tool_calling_agent
 from langchain.tools import tool
 from langchain_community.tools.ddg_search.tool import DuckDuckGoSearchRun
 from app.rag.vector_store import VectorStoreManager
